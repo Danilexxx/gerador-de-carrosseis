@@ -1,0 +1,85 @@
+import { useState } from 'react';
+import { gerarCarrossel } from '../services/ai';
+
+export default function CarouselForm({ apiKey, setGeneratedCarousel, isGenerating, setIsGenerating, openSettings }) {
+  const [pageName, setPageName] = useState('');
+  const [niche, setNiche] = useState('');
+  const [theme, setTheme] = useState('');
+  const [reference, setReference] = useState('');
+  const [error, setError] = useState('');
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+
+    if (!apiKey) {
+      openSettings();
+      return;
+    }
+
+    if (!pageName || !niche || !theme) {
+      setError('Por favor, preencha o Nome da Página, Nicho e Tema.');
+      return;
+    }
+
+    setIsGenerating(true);
+    try {
+      const resultado = await gerarCarrossel({
+        apiKey,
+        pageName,
+        niche,
+        theme,
+        reference
+      });
+      setGeneratedCarousel(resultado);
+    } catch (err) {
+      console.error(err);
+      setError(err.message || 'Erro ao gerar carrossel. Verifique sua chave da API.');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  return (
+    <div className="glass-panel" style={{ padding: '30px' }}>
+      <h2 style={{ marginBottom: '20px' }}>Criar Novo Carrossel</h2>
+      {error && <div style={{ color: '#ef4444', marginBottom: '15px', fontSize: '0.9rem', padding: '10px', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '8px' }}>{error}</div>}
+      
+      <form onSubmit={handleSubmit}>
+        <div className="form-group">
+          <label>Nome da Página</label>
+          <input value={pageName} onChange={e => setPageName(e.target.value)} placeholder="Ex: @minhapagina" />
+        </div>
+        
+        <div className="form-group">
+          <label>Nicho / Assunto</label>
+          <input value={niche} onChange={e => setNiche(e.target.value)} placeholder="Ex: Marketing Digital, Nutrição, Finanças" />
+        </div>
+        
+        <div className="form-group">
+          <label>Tema do Carrossel</label>
+          <input value={theme} onChange={e => setTheme(e.target.value)} placeholder="Ex: 5 erros ao investir em Renda Fixa" />
+        </div>
+        
+        <div className="form-group">
+          <label>Modelo de Referência (Opcional)</label>
+          <textarea 
+            value={reference} 
+            onChange={e => setReference(e.target.value)} 
+            rows="5"
+            placeholder="Cole aqui a estrutura ou os textos de um carrossel base para a IA seguir o estilo..."
+          />
+        </div>
+
+        <button type="submit" className="btn-primary" style={{ width: '100%', marginTop: '10px' }} disabled={isGenerating}>
+          {isGenerating ? (
+            <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
+              <span className="loader" style={{ width: '18px', height: '18px', borderWidth: '2px' }}></span>
+              Gerando com IA...
+            </span>
+          ) : 'Gerar Roteiro do Carrossel ✨'}
+        </button>
+      </form>
+    </div>
+  );
+}
