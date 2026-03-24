@@ -1,4 +1,4 @@
-export async function gerarCarrossel({ apiKey, pageName, niche, theme, reference, referenceImage }) {
+export async function gerarCarrossel({ apiKey, pageName, niche, theme, reference, referenceImages = [] }) {
   const prompt = `
 Você é um especialista em criação de conteúdos para redes sociais, com foco em carrosséis para Instagram.
 Crie um carrossel atraente e estratégico.
@@ -6,7 +6,7 @@ Crie um carrossel atraente e estratégico.
 - Nicho: ${niche}
 - Tema: ${theme}
 ${reference ? `- Modelo de Referência para seguir a estrutura/estilo:\n${reference}` : ''}
-${referenceImage ? `- A imagem anexada a esta mensagem é um modelo de referência visual. Analise o estilo do conteúdo nela para se inspirar e crie o texto seguindo a mesma pegada lógica ou visual observada nela.` : ''}
+${referenceImages.length > 0 ? `- As imagens anexadas a esta mensagem são modelos de referência visual. Analise o estilo do conteúdo nelas para se inspirar e crie o texto seguindo a mesma pegada lógica ou visual observada em conjunto.` : ''}
 
 REGRAS OBRIGATÓRIAS:
 - Retorne APENAS um objeto JSON. Você não pode retornar nenhum texto fora do JSON.
@@ -29,11 +29,11 @@ REGRAS OBRIGATÓRIAS:
   let contentPayload;
   let modelToUse = "llama-3.3-70b-versatile";
 
-  if (referenceImage) {
+  if (referenceImages && referenceImages.length > 0) {
     modelToUse = "llama-3.2-90b-vision-preview";
     contentPayload = [
       { type: "text", text: prompt },
-      { type: "image_url", image_url: { url: referenceImage } }
+      ...referenceImages.map(imgUrl => ({ type: "image_url", image_url: { url: imgUrl } }))
     ];
   } else {
     contentPayload = prompt;

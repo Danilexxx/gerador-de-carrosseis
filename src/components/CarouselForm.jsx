@@ -6,7 +6,7 @@ export default function CarouselForm({ apiKey, setGeneratedCarousel, isGeneratin
   const [niche, setNiche] = useState('');
   const [theme, setTheme] = useState('');
   const [reference, setReference] = useState('');
-  const [referenceImage, setReferenceImage] = useState(null);
+  const [referenceImages, setReferenceImages] = useState([]);
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -24,11 +24,10 @@ export default function CarouselForm({ apiKey, setGeneratedCarousel, isGeneratin
             }
             const reader = new FileReader();
             reader.onloadend = () => {
-              setReferenceImage(reader.result);
+              setReferenceImages(prev => [...prev, reader.result].slice(0, 4));
             };
             reader.readAsDataURL(file);
           }
-          break;
         }
       }
     };
@@ -38,20 +37,18 @@ export default function CarouselForm({ apiKey, setGeneratedCarousel, isGeneratin
   }, []);
 
   const handleImageUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
+    const files = Array.from(e.target.files);
+    files.forEach(file => {
       if (file.size > 4 * 1024 * 1024) {
-        setError('A imagem é muito grande. Escolha uma imagem de até 4MB.');
+        setError('Uma das imagens é muito grande. Escolha imagens de até 4MB.');
         return;
       }
       const reader = new FileReader();
       reader.onloadend = () => {
-        setReferenceImage(reader.result);
+        setReferenceImages(prev => [...prev, reader.result].slice(0, 4));
       };
       reader.readAsDataURL(file);
-    } else {
-      setReferenceImage(null);
-    }
+    });
   };
 
   const handleSubmit = async (e) => {
@@ -76,7 +73,7 @@ export default function CarouselForm({ apiKey, setGeneratedCarousel, isGeneratin
         niche,
         theme,
         reference,
-        referenceImage
+        referenceImages
       });
       setGeneratedCarousel(resultado);
     } catch (err) {
@@ -119,26 +116,31 @@ export default function CarouselForm({ apiKey, setGeneratedCarousel, isGeneratin
         </div>
 
         <div className="form-group" style={{ background: 'rgba(255,255,255,0.03)', padding: '15px', borderRadius: '8px', border: '1px dashed var(--border-color)' }}>
-          <label>Imagem de Referência Visual (Opcional)</label>
+          <label>Imagens de Referência Visual (Até 4 fotos)</label>
           <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '10px' }}>
-            Aperte <strong>CTRL+V</strong> em qualquer lugar desta tela para colar a imagem diretamente, ou selecione o arquivo:
+            Aperte <strong>CTRL+V</strong> em qualquer lugar desta tela para colar imagens diretamente, ou selecione os arquivos:
           </div>
           <input 
             type="file" 
             accept="image/*" 
+            multiple
             onChange={handleImageUpload} 
             style={{ background: 'transparent', border: 'none', padding: '5px 0' }}
           />
-          {referenceImage && (
-            <div style={{ marginTop: '15px', position: 'relative', display: 'inline-block' }}>
-              <img src={referenceImage} alt="Reference Preview" style={{ maxHeight: '120px', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.2)' }} />
-              <button 
-                type="button" 
-                onClick={() => setReferenceImage(null)} 
-                style={{ position: 'absolute', top: '-10px', right: '-10px', background: '#ef4444', color: '#fff', border: 'none', borderRadius: '50%', width: '24px', height: '24px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px' }}
-              >
-                ✕
-              </button>
+          {referenceImages.length > 0 && (
+            <div style={{ marginTop: '15px', display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+              {referenceImages.map((imgUrl, index) => (
+                <div key={index} style={{ position: 'relative', display: 'inline-block' }}>
+                  <img src={imgUrl} alt={`Ref ${index + 1}`} style={{ maxHeight: '100px', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.2)' }} />
+                  <button 
+                    type="button" 
+                    onClick={() => setReferenceImages(prev => prev.filter((_, i) => i !== index))} 
+                    style={{ position: 'absolute', top: '-8px', right: '-8px', background: '#ef4444', color: '#fff', border: 'none', borderRadius: '50%', width: '22px', height: '22px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px' }}
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
             </div>
           )}
         </div>
