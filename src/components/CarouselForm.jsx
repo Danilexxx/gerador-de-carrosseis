@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { gerarCarrossel } from '../services/ai';
 
 export default function CarouselForm({ apiKey, setGeneratedCarousel, isGenerating, setIsGenerating, openSettings }) {
@@ -8,6 +8,34 @@ export default function CarouselForm({ apiKey, setGeneratedCarousel, isGeneratin
   const [reference, setReference] = useState('');
   const [referenceImage, setReferenceImage] = useState(null);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    const handlePaste = (e) => {
+      const items = e.clipboardData?.items;
+      if (!items) return;
+
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].type.indexOf('image') !== -1) {
+          const file = items[i].getAsFile();
+          if (file) {
+            if (file.size > 4 * 1024 * 1024) {
+              setError('A imagem colada é muito grande (máximo 4MB).');
+              return;
+            }
+            const reader = new FileReader();
+            reader.onloadend = () => {
+              setReferenceImage(reader.result);
+            };
+            reader.readAsDataURL(file);
+          }
+          break;
+        }
+      }
+    };
+
+    window.addEventListener('paste', handlePaste);
+    return () => window.removeEventListener('paste', handlePaste);
+  }, []);
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
@@ -91,7 +119,10 @@ export default function CarouselForm({ apiKey, setGeneratedCarousel, isGeneratin
         </div>
 
         <div className="form-group" style={{ background: 'rgba(255,255,255,0.03)', padding: '15px', borderRadius: '8px', border: '1px dashed var(--border-color)' }}>
-          <label>Ou envie uma Imagem como Referência (Opcional)</label>
+          <label>Imagem de Referência Visual (Opcional)</label>
+          <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '10px' }}>
+            Aperte <strong>CTRL+V</strong> em qualquer lugar desta tela para colar a imagem diretamente, ou selecione o arquivo:
+          </div>
           <input 
             type="file" 
             accept="image/*" 
