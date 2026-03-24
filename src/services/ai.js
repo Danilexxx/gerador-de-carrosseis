@@ -25,14 +25,14 @@ REGRAS OBRIGATÓRIAS:
 - Adapte a linguagem ao público.
 `;
 
-  const response = await fetch("https://api.openai.com/v1/chat/completions", {
+  const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       "Authorization": `Bearer ${apiKey.trim()}`
     },
     body: JSON.stringify({
-      model: "gpt-4o-mini",
+      model: "llama-3.3-70b-versatile",
       messages: [{ role: "user", content: prompt }],
       response_format: { type: "json_object" },
       temperature: 0.7

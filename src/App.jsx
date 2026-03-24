@@ -11,7 +11,7 @@ function App() {
   const [isGenerating, setIsGenerating] = useState(false);
 
   useEffect(() => {
-    const savedKey = localStorage.getItem('openai_api_key');
+    const savedKey = localStorage.getItem('groq_api_key');
     if (savedKey) setApiKey(savedKey);
   }, []);
 

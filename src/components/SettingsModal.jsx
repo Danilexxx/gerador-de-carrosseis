@@ -1,6 +1,6 @@
 export default function SettingsModal({ closeModal, apiKey, setApiKey }) {
   const saveKey = () => {
-    localStorage.setItem('openai_api_key', apiKey);
+    localStorage.setItem('groq_api_key', apiKey);
     closeModal();
   };
 
@@ -10,16 +10,16 @@ export default function SettingsModal({ closeModal, apiKey, setApiKey }) {
         <button className="modal-close" onClick={closeModal}>&times;</button>
         <h2 style={{ marginBottom: '20px' }}>Configurar API Key</h2>
         <p style={{ marginBottom: '15px', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
-          Para que o sistema gratuito e sem backend funcione, você precisa fornecer sua própria chave da OpenAI (começa com sk-proj...). 
-          Ela ficará salva apenas no seu navegador localmente, de forma segura.
+          Para usar a inteligência artificial sem custos, vamos utilizar a API da Groq (Llama 3). 
+          Gere sua chave gratuita em <b>console.groq.com/keys</b> e cole abaixo.
         </p>
         <div className="form-group">
-          <label>OpenAI API Key</label>
+          <label>Groq API Key</label>
           <input 
             type="password" 
             value={apiKey} 
             onChange={e => setApiKey(e.target.value)}
-            placeholder="sk-proj-..."
+            placeholder="gsk_..."
           />
         </div>
         <button className="btn-primary" onClick={saveKey} style={{ width: '100%' }}>
