@@ -1,4 +1,4 @@
-export async function gerarCarrossel({ apiKey, pageName, niche, theme, reference }) {
+export async function gerarCarrossel({ apiKey, pageName, niche, theme, reference, referenceImage }) {
   const prompt = `
 Você é um especialista em criação de conteúdos para redes sociais, com foco em carrosséis para Instagram.
 Crie um carrossel atraente e estratégico.
@@ -6,6 +6,7 @@ Crie um carrossel atraente e estratégico.
 - Nicho: ${niche}
 - Tema: ${theme}
 ${reference ? `- Modelo de Referência para seguir a estrutura/estilo:\n${reference}` : ''}
+${referenceImage ? `- A imagem anexada a esta mensagem é um modelo de referência visual. Analise o estilo do conteúdo nela para se inspirar e crie o texto seguindo a mesma pegada lógica ou visual observada nela.` : ''}
 
 REGRAS OBRIGATÓRIAS:
 - Retorne APENAS um objeto JSON. Você não pode retornar nenhum texto fora do JSON.
@@ -25,6 +26,19 @@ REGRAS OBRIGATÓRIAS:
 - Adapte a linguagem ao público.
 `;
 
+  let contentPayload;
+  let modelToUse = "llama-3.3-70b-versatile";
+
+  if (referenceImage) {
+    modelToUse = "llama-3.2-90b-vision-preview";
+    contentPayload = [
+      { type: "text", text: prompt },
+      { type: "image_url", image_url: { url: referenceImage } }
+    ];
+  } else {
+    contentPayload = prompt;
+  }
+
   const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
     method: "POST",
     headers: {
@@ -32,8 +46,8 @@ REGRAS OBRIGATÓRIAS:
       "Authorization": `Bearer ${apiKey.trim()}`
     },
     body: JSON.stringify({
-      model: "llama-3.3-70b-versatile",
-      messages: [{ role: "user", content: prompt }],
+      model: modelToUse,
+      messages: [{ role: "user", content: contentPayload }],
       response_format: { type: "json_object" },
       temperature: 0.7
     })

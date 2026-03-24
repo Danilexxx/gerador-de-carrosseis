@@ -6,7 +6,25 @@ export default function CarouselForm({ apiKey, setGeneratedCarousel, isGeneratin
   const [niche, setNiche] = useState('');
   const [theme, setTheme] = useState('');
   const [reference, setReference] = useState('');
+  const [referenceImage, setReferenceImage] = useState(null);
   const [error, setError] = useState('');
+
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 4 * 1024 * 1024) {
+        setError('A imagem é muito grande. Escolha uma imagem de até 4MB.');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setReferenceImage(reader.result);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setReferenceImage(null);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -29,7 +47,8 @@ export default function CarouselForm({ apiKey, setGeneratedCarousel, isGeneratin
         pageName,
         niche,
         theme,
-        reference
+        reference,
+        referenceImage
       });
       setGeneratedCarousel(resultado);
     } catch (err) {
@@ -66,9 +85,31 @@ export default function CarouselForm({ apiKey, setGeneratedCarousel, isGeneratin
           <textarea 
             value={reference} 
             onChange={e => setReference(e.target.value)} 
-            rows="5"
+            rows="4"
             placeholder="Cole aqui a estrutura ou os textos de um carrossel base para a IA seguir o estilo..."
           />
+        </div>
+
+        <div className="form-group" style={{ background: 'rgba(255,255,255,0.03)', padding: '15px', borderRadius: '8px', border: '1px dashed var(--border-color)' }}>
+          <label>Ou envie uma Imagem como Referência (Opcional)</label>
+          <input 
+            type="file" 
+            accept="image/*" 
+            onChange={handleImageUpload} 
+            style={{ background: 'transparent', border: 'none', padding: '5px 0' }}
+          />
+          {referenceImage && (
+            <div style={{ marginTop: '15px', position: 'relative', display: 'inline-block' }}>
+              <img src={referenceImage} alt="Reference Preview" style={{ maxHeight: '120px', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.2)' }} />
+              <button 
+                type="button" 
+                onClick={() => setReferenceImage(null)} 
+                style={{ position: 'absolute', top: '-10px', right: '-10px', background: '#ef4444', color: '#fff', border: 'none', borderRadius: '50%', width: '24px', height: '24px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px' }}
+              >
+                ✕
+              </button>
+            </div>
+          )}
         </div>
 
         <button type="submit" className="btn-primary" style={{ width: '100%', marginTop: '10px' }} disabled={isGenerating}>
